@@ -41,9 +41,13 @@ function AdminRoute({ user, children }) {
 function App() {
   const navigate = useNavigate();
 
-  const [user, setUser] = useState(
-    JSON.parse(localStorage.getItem("user"))
-  );
+  const [user, setUser] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("user"));
+    } catch {
+      return null;
+    }
+  });
 
   const [cartCount, setCartCount] = useState(0);
 
@@ -289,7 +293,7 @@ function App() {
         <Routes>
 
           {/* PUBLIC */}
-          <Route path="/" element={user ? <Navigate to="/home" replace /> : <LandingPage theme={theme} />} />
+          <Route path="/" element={<LandingPage theme={theme} />} />
           <Route path="/landing" element={<LandingPage theme={theme} />} />
           <Route path="/login" element={<PublicRoute user={user}><Login /></PublicRoute>} />
           <Route path="/register" element={<PublicRoute user={user}><Register /></PublicRoute>} />
