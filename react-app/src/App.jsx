@@ -55,7 +55,6 @@ function App() {
     localStorage.getItem("theme") || "dark"
   );
 
-  /* Global Toast for Order Notifications */
   const [globalToast, setGlobalToast] = useState("");
   const previousOrdersRef = useRef([]);
 
@@ -75,18 +74,6 @@ function App() {
               if (prevOrder && prevOrder.status !== newOrder.status) {
                 const msg = `Order #${newOrder.id} status updated to ${newOrder.status}!`;
 
-                if ("Notification" in window) {
-                  if (Notification.permission === "granted") {
-                    new Notification("VIVEKX Status Update", { body: msg });
-                  } else if (Notification.permission !== "denied") {
-                    Notification.requestPermission().then(permission => {
-                      if (permission === "granted") {
-                        new Notification("VIVEKX Status Update", { body: msg });
-                      }
-                    });
-                  }
-                }
-
                 setGlobalToast(msg);
                 setTimeout(() => setGlobalToast(""), 5000);
               }
@@ -97,15 +84,11 @@ function App() {
         .catch(() => { });
     }
 
-    // Initial check and regular polling
     checkOrderStatus();
     const interval = setInterval(checkOrderStatus, 5000);
     return () => clearInterval(interval);
   }, [user]);
 
-  /* =========================
-     CART COUNT
-  ========================= */
   function refreshCart() {
     if (!user?.token) {
       setCartCount(0);
@@ -140,28 +123,11 @@ function App() {
     return () => window.removeEventListener("auth-change", syncUser);
   }, []);
 
-  /* =========================
-     THEME
-  ========================= */
   useEffect(() => {
     document.body.className = theme;
   }, [theme]);
 
   const location = useLocation();
-
-  // HIGH-PERFORMANCE MOUSE TRACKER (CSS Variable Method - Zero Lag)
-  useEffect(() => {
-    if (theme !== 'panther') return;
-    const hud = document.querySelector('.panther-hud');
-    const handleMove = (e) => {
-      const x = e.clientX;
-      const y = e.clientY;
-      document.documentElement.style.setProperty('--mx', `${x}px`);
-      document.documentElement.style.setProperty('--my', `${y}px`);
-    };
-    window.addEventListener("mousemove", handleMove);
-    return () => window.removeEventListener("mousemove", handleMove);
-  }, [theme]);
 
   function toggleTheme() {
     const t = theme === "dark" ? "light" : "dark";
@@ -178,123 +144,45 @@ function App() {
 
   return (
     <>
-      {/* BLACK PANTHER EXCLUSIVE HUD */}
-      {theme === 'panther' && (
-        <>
-          <div className="panther-hud">
-            <div className="panther-grid" />
-            <div className="panther-stars" />
-            <div className="panther-particles" />
-
-            {/* 3D KINETIC OBJECT (Simulated) */}
-            <div className="panther-3d-object-wrap">
-              <div className="panther-3d-object" />
-            </div>
-
-            <div className="panther-dripping">
-              <span className="drip-1"></span>
-              <span className="drip-2"></span>
-              <span className="drip-3"></span>
-            </div>
-          </div>
-          <div className="panther-cursor" />
-        </>
-      )}
-
-      {/* =========================
-          NAVBAR
-      ========================= */}
       <nav className="nav-bar">
-
-        <Link to="/home" className="nav-logo" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          {theme === 'panther' && <span className="vxp-badge">P-01</span>}
-          <div className="logo-text-wrap" style={{ display: 'flex', flexDirection: 'column', lineHeight: '1' }}>
-            <span className="logo-main">VIVEKX</span>
-            <span className="logo-sub">Collections</span>
-          </div>
+        <Link to="/home" className="nav-logo">
+          VIVEKX
         </Link>
 
-        {/* NAV LINKS */}
         <div className="nav-links">
-
           {!user ? (
             <>
-              <div className="nav-item">
-                <Link to="/login">Login</Link>
-                <img src="/dark/arrow.png" className="nav-hover-arrow" alt="" />
-              </div>
-
-              <div className="nav-item">
-                <Link to="/register">Register</Link>
-                <img src="/dark/arrow.png" className="nav-hover-arrow" alt="" />
-              </div>
+              <Link to="/login">Login</Link>
+              <Link to="/register">Register</Link>
             </>
           ) : (
             <>
-              <div className="nav-item">
-                <Link to="/cart">
-                  Cart <span className="cart-count">{cartCount}</span>
-                </Link>
-                <img src="/dark/arrow.png" className="nav-hover-arrow" alt="" />
-              </div>
-
-              <div className="nav-item">
-                <Link to="/orders">My Orders</Link>
-                <img src="/dark/arrow.png" className="nav-hover-arrow" alt="" />
-              </div>
+              <Link to="/cart">Cart ({cartCount})</Link>
+              <Link to="/orders">My Orders</Link>
 
               {user.role === "ADMIN" && (
                 <>
-                  <div className="nav-item">
-                    <Link to="/admin">Dashboard</Link>
-                    <img src="/dark/arrow.png" className="nav-hover-arrow" alt="" />
-                  </div>
-
-                  <div className="nav-item">
-                    <Link to="/admin/orders">Orders</Link>
-                    <img src="/dark/arrow.png" className="nav-hover-arrow" alt="" />
-                  </div>
+                  <Link to="/admin">Dashboard</Link>
+                  <Link to="/admin/orders">Orders</Link>
                 </>
               )}
 
-              <div className="nav-item nav-user">
-                Hi, {user.name}
-                <img src="/dark/arrow.png" className="nav-hover-arrow" alt="" />
-              </div>
-
-              <button className="logout-btn" onClick={handleLogout}>
-                Logout
-              </button>
+              <span>Hi, {user.name}</span>
+              <button onClick={handleLogout}>Logout</button>
             </>
           )}
 
-          <button
-            className={`panther-toggle ${theme === 'panther' ? 'active' : ''}`}
-            onClick={() => {
-              const t = theme === 'panther' ? 'dark' : 'panther';
-              setTheme(t);
-              localStorage.setItem('theme', t);
-            }}
-            title="Panther Edition"
-          >
-            <span>🐈‍⬛</span>
-          </button>
-
-          <button className="theme-toggle" onClick={toggleTheme}>
-            <span className="toggle-thumb" />
-          </button>
+          <button onClick={toggleTheme}>Toggle Theme</button>
         </div>
       </nav>
 
-      {/* =========================
-          PAGE CONTENT
-      ========================= */}
       <div className="page-container">
         <Routes>
 
+          {/* ✅ DEBUG ROOT */}
+          <Route path="/" element={<h1>Landing Page Works</h1>} />
+
           {/* PUBLIC */}
-          <Route path="/" element={<LandingPage theme={theme} />} />
-          <Route path="/landing" element={<LandingPage theme={theme} />} />
           <Route path="/login" element={<PublicRoute user={user}><Login /></PublicRoute>} />
           <Route path="/register" element={<PublicRoute user={user}><Register /></PublicRoute>} />
           <Route path="/forgot" element={<ForgotPassword />} />
@@ -311,34 +199,22 @@ function App() {
           <Route path="/track-order/:id" element={user ? <TrackOrder /> : <Navigate to="/login" />} />
           <Route path="/orders" element={user ? <MyOrders /> : <Navigate to="/login" />} />
           <Route path="/my-collectibles" element={user ? <MyCollectibles /> : <Navigate to="/login" />} />
+
           {/* ADMIN */}
           <Route path="/admin" element={<AdminRoute user={user}><AdminDashboard /></AdminRoute>} />
           <Route path="/admin/orders" element={<AdminRoute user={user}><AdminOrders /></AdminRoute>} />
-          <Route path="/admin/add-product"
-            element={
-              <AdminRoute user={user}>
-                <AddProduct />
-              </AdminRoute>
-            }
-          />
-          <Route
-            path="/edit/:id"
-            element={
-              <AdminRoute user={user}>
-                <EditProduct />
-              </AdminRoute>
-            }
-          />
+          <Route path="/admin/add-product" element={<AdminRoute user={user}><AddProduct /></AdminRoute>} />
+          <Route path="/edit/:id" element={<AdminRoute user={user}><EditProduct /></AdminRoute>} />
+
+          {/* ✅ FALLBACK FIX */}
+          <Route path="*" element={<Navigate to="/" />} />
+
         </Routes>
       </div>
 
-      {/* =========================
-          GLOBAL NOTIFICATIONS
-      ========================= */}
       {globalToast && (
-        <div className="lux-pd-toast show" style={{ zIndex: 999999 }}>
-          <div className="toast-icon">✨</div>
-          <div className="toast-text">{globalToast}</div>
+        <div className="lux-pd-toast show">
+          {globalToast}
         </div>
       )}
     </>
