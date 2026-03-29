@@ -1,6 +1,6 @@
 import { useState } from "react";
 import "./App.css";
-
+import API_BASE_URL from "./config";
 const CLOUD_NAME = "dgpxnwfaq";
 const UPLOAD_PRESET = "vivekx_products";
 
@@ -171,100 +171,81 @@ function AddProduct() {
 
         e.preventDefault();
 
-
-        fetch("http://localhost:8080/api/products", {
+        fetch(`${API_BASE_URL}/api/products`, {
 
             method: "POST",
 
             headers: {
-
                 "Content-Type": "application/json"
-
             },
 
             body: JSON.stringify({
-
                 name: form.name,
-
                 slug: form.slug,
-
                 price: Number(form.price),
-
                 discountPrice: form.discountPrice
-
                     ? Number(form.discountPrice)
-
                     : null,
-
                 stock: Number(form.stock),
-
                 category: form.category,
-
                 description: form.description,
-
                 active: form.active,
 
-
-                /* convert variants */
-
                 sizes: form.sizes
-
-                    ? form.sizes.split(",")
-
+                    ? form.sizes.split(",").map(s => ({ size: s.trim() }))
                     : [],
 
                 colors: form.colors
-
-                    ? form.colors.split(",")
-
+                    ? form.colors.split(",").map(c => ({ color: c.trim() }))
                     : [],
 
+                images: form.images.map(img => ({
+                    image: img
+                })),
 
-                imageUrl: form.images[0],
+                imageUrl: form.images.length > 0
+                    ? form.images[0]
+                    : null,
 
-                images: form.images
-
+                collectible: false,
+                rarityLevel: null
             })
 
         })
+            .then(res => {
 
+                if (!res.ok) throw new Error("Failed to add");
+
+                return res.json();
+
+            })
             .then(() => {
 
                 alert("Product added 🚀");
 
-
                 window.dispatchEvent(
-
                     new Event("product-added")
-
                 );
 
-
                 setForm({
-
                     name: "",
-
                     slug: "",
-
                     price: "",
-
                     discountPrice: "",
-
                     stock: "",
-
                     category: "Watch",
-
                     description: "",
-
                     sizes: "",
-
                     colors: "",
-
                     active: true,
-
                     images: []
-
                 });
+
+            })
+            .catch(err => {
+
+                console.error(err);
+                alert("Error adding product");
 
             });
 

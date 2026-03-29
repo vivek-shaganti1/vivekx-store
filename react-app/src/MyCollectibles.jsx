@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import "./collectibles.css";
-
+import API_BASE_URL from "./config";
 export default function MyCollectibles() {
 
     const [items, setItems] = useState([]);
 
     useEffect(() => {
 
-        fetch("http://localhost:8080/api/ownership/user/1")
+        fetch(`${API_BASE_URL}/api/ownership/user/1`)
             .then(res => res.json())
             .then(data => {
 

@@ -1,3 +1,4 @@
+import API_BASE_URL from "./config";
 function handleBuyNow() {
   const user = JSON.parse(localStorage.getItem("user"));
 
@@ -7,7 +8,7 @@ function handleBuyNow() {
   }
 
   fetch(
-    `http://localhost:8080/api/orders/buy-now?productId=${product.id}&quantity=${qty}`,
+    `${API_BASE_URL}/api/orders/buy-now?productId=${product.id}&quantity=${qty}`,
     {
       method: "POST",
       headers: {

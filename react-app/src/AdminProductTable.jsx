@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Trash2, RotateCcw, Eye, EyeOff } from "lucide-react";
 import "./App.css";
-
+import API_BASE_URL from "./config";
 function AdminProductTable() {
 
     const [products, setProducts] = useState([]);
@@ -22,7 +22,7 @@ function AdminProductTable() {
 
         fetch(
 
-            "http://localhost:8080/api/products/admin/all",
+            `${API_BASE_URL}/api/products/admin/all`,
 
             {
 
@@ -81,7 +81,7 @@ function AdminProductTable() {
 
         fetch(
 
-            `http://localhost:8080/api/products/${id}`,
+            `${API_BASE_URL}/api/products/${id}`,
 
             {
 
@@ -106,7 +106,7 @@ function AdminProductTable() {
 
         fetch(
 
-            `http://localhost:8080/api/products/restore/${id}`,
+            `${API_BASE_URL}/api/products/restore/${id}`,
 
             {
 
@@ -131,7 +131,7 @@ function AdminProductTable() {
 
         fetch(
 
-            `http://localhost:8080/api/products/toggle/${id}`,
+            `${API_BASE_URL}/api/products/toggle/${id}`,
 
             {
 
@@ -315,31 +315,17 @@ function AdminProductTable() {
                             <td>
 
                                 <img
-
                                     src={
-
-                                        p.images?.[0]
-
-                                        ||
-
-                                        p.imageUrl
-
-                                        ||
-
-                                        "https://dummyimage.com/60x60/000/fff"
-
+                                        typeof p.images?.[0] === "object"
+                                            ? p.images[0].image
+                                            : p.images?.[0]
+                                            || p.imageUrl
+                                            || "https://dummyimage.com/60x60/000/fff"
                                     }
-
                                     className="table-img"
-
                                     onError={e => {
-
-                                        e.target.src =
-
-                                            "https://dummyimage.com/60x60/000/fff";
-
+                                        e.target.src = "https://dummyimage.com/60x60/000/fff";
                                     }}
-
                                 />
 
                             </td>

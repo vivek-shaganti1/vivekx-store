@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./App.css";
-
+import API_BASE_URL from "./config";
 function Cart() {
   const navigate = useNavigate();
   const [cart, setCart] = useState([]);
@@ -10,7 +10,7 @@ function Cart() {
 
   function loadCart() {
     if (!user?.token) return;
-    fetch("http://localhost:8080/api/cart", {
+    fetch(`${API_BASE_URL}/api/cart`, {
       headers: { Authorization: `Bearer ${user.token}` }
     })
       .then(res => res.json())
@@ -39,14 +39,14 @@ function Cart() {
 
   function updateQty(id, qty) {
     if (qty < 1) return;
-    fetch(`http://localhost:8080/api/cart/update/${id}?quantity=${qty}`, {
+    fetch(`${API_BASE_URL}/api/cart/update/${id}?quantity=${qty}`, {
       method: "PUT",
       headers: { Authorization: `Bearer ${user.token}` }
     }).then(loadCart);
   }
 
   function removeItem(id) {
-    fetch(`http://localhost:8080/api/cart/remove/${id}`, {
+    fetch(`${API_BASE_URL}/api/cart/remove/${id}`, {
       method: "DELETE",
       headers: { Authorization: `Bearer ${user.token}` }
     }).then(loadCart);

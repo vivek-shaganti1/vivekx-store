@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import API_BASE_URL from "./config";
 
 const CLOUD_NAME = "dgpxnwfaq";
 const UPLOAD_PRESET = "vivekx_products";
@@ -7,7 +8,6 @@ const UPLOAD_PRESET = "vivekx_products";
 function EditProduct() {
 
     const { id } = useParams();
-
     const navigate = useNavigate();
 
     const [form, setForm] = useState({
@@ -19,23 +19,26 @@ function EditProduct() {
         stock: "",
         category: "Watch",
         description: "",
-        sizes: "",
-        colors: "",
-        active: true,
-        images: []
+
+        sizesText: "",
+        colorsText: "",
+
+        images: [],
+        productCode: "",
+
+        active: true
 
     });
 
     const [loading, setLoading] = useState(true);
-
     const [uploading, setUploading] = useState(false);
 
 
-    /* load product */
+    /* LOAD PRODUCT */
 
     useEffect(() => {
 
-        fetch(`http://localhost:8080/api/products/${id}`)
+        fetch(`${API_BASE_URL}/api/products/${id}`)
 
             .then(res => res.json())
 
@@ -44,34 +47,33 @@ function EditProduct() {
                 setForm({
 
                     name: data.name || "",
-
                     slug: data.slug || "",
-
                     price: data.price || "",
-
                     discountPrice: data.discountPrice || "",
-
                     stock: data.stock || "",
-
                     category: data.category || "Watch",
-
                     description: data.description || "",
 
-                    sizes: data.sizes?.join(",") || "",
+                    sizesText:
+                        data.sizes?.length
+                            ? data.sizes.map(s => s.size).join(",")
+                            : "",
 
-                    colors: data.colors?.join(",") || "",
+                    colorsText:
+                        data.colors?.length
+                            ? data.colors.map(c => c.color).join(",")
+                            : "",
 
-                    active: data.active,
+                    images:
+                        data.images?.length
+                            ? data.images
+                            : data.imageUrl
+                                ? [{ image: data.imageUrl }]
+                                : [],
 
-                    images: data.images?.length
+                    productCode: data.productCode || null,
 
-                        ? data.images
-
-                        : data.imageUrl
-
-                            ? [data.imageUrl]
-
-                            : []
+                    active: data.active ?? true
 
                 });
 
@@ -82,6 +84,8 @@ function EditProduct() {
     }, [id]);
 
 
+    /* INPUT CHANGE */
+
     function handleChange(e) {
 
         const { name, value, type, checked } = e.target;
@@ -90,18 +94,17 @@ function EditProduct() {
 
             ...form,
 
-            [name]: type === "checkbox"
-
-                ? checked
-
-                : value
+            [name]:
+                type === "checkbox"
+                    ? checked
+                    : value
 
         });
 
     }
 
 
-    /* upload image */
+    /* CLOUDINARY UPLOAD */
 
     async function uploadImage(file) {
 
@@ -110,7 +113,6 @@ function EditProduct() {
         const data = new FormData();
 
         data.append("file", file);
-
         data.append("upload_preset", UPLOAD_PRESET);
 
         const res = await fetch(
@@ -118,11 +120,8 @@ function EditProduct() {
             `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
 
             {
-
                 method: "POST",
-
                 body: data
-
             }
 
         );
@@ -133,7 +132,7 @@ function EditProduct() {
 
             ...f,
 
-            images: [...f.images, json.secure_url]
+            images: [...f.images, { image: json.secure_url }]
 
         }));
 
@@ -142,133 +141,163 @@ function EditProduct() {
     }
 
 
-    /* drag reorder */
-
-    function dragStart(index) {
-
-        return e => {
-
-            e.dataTransfer.setData("index", index);
-
-        };
-
-    }
-
-
-    function dropImage(index) {
-
-        return e => {
-
-            e.preventDefault();
-
-            const fromIndex = e.dataTransfer.getData("index");
-
-            const updated = [...form.images];
-
-            const moved = updated.splice(fromIndex, 1)[0];
-
-            updated.splice(index, 0, moved);
-
-            setForm({
-
-                ...form,
-
-                images: updated
-
-            });
-
-        };
-
-    }
-
+    /* REMOVE IMAGE */
 
     function removeImage(index) {
 
-        setForm(f => ({
+        setForm({
 
-            ...f,
+            ...form,
 
-            images: f.images.filter((_, i) => i !== index)
+            images: form.images.filter((_, i) => i !== index)
 
-        }));
+        });
 
     }
 
 
-    /* save */
+    /* SAVE */
 
     function saveProduct(e) {
 
         e.preventDefault();
 
-        fetch(
+        const payload = {
 
-            `http://localhost:8080/api/products/${id}`,
+            id: Number(id),
 
-            {
+            name: form.name || "",
+            slug: form.slug || "",
 
-                method: "PUT",
+            price: Number(form.price) || 0,
 
-                headers: {
+            discountPrice:
+                form.discountPrice
+                    ? Number(form.discountPrice)
+                    : null,
 
-                    "Content-Type": "application/json"
+            stock: Number(form.stock) || 0,
 
-                },
+            category: form.category || "Watch",
 
-                body: JSON.stringify({
+            description: form.description || "",
 
-                    name: form.name,
+            active: form.active ?? true,
 
-                    slug: form.slug,
+            productCode: form.productCode || null,
 
-                    price: Number(form.price),
 
-                    discountPrice: form.discountPrice
+            /* NEVER NULL */
+            sizes:
+                form.sizesText && form.sizesText.trim() !== ""
+                    ? form.sizesText.split(",").map(s => ({
+                        size: s.trim()
+                    }))
+                    : [],
 
-                        ? Number(form.discountPrice)
 
-                        : null,
+            colors:
+                form.colorsText && form.colorsText.trim() !== ""
+                    ? form.colorsText.split(",").map(c => ({
+                        color: c.trim()
+                    }))
+                    : [],
 
-                    stock: Number(form.stock),
 
-                    category: form.category,
+            /* IMAGES SAFE */
+            images:
 
-                    description: form.description,
+                Array.isArray(form.images)
 
-                    active: form.active,
+                    ? form.images.map(img => {
 
-                    sizes: form.sizes
+                        if (typeof img === "object") {
 
-                        ? form.sizes.split(",")
+                            if (img.id) {
 
-                        : [],
+                                return {
+                                    id: img.id,
+                                    image: img.image
+                                };
 
-                    colors: form.colors
+                            }
 
-                        ? form.colors.split(",")
+                            return {
+                                image: img.image
+                            };
 
-                        : [],
+                        }
 
-                    imageUrl: form.images[0],
+                        return {
+                            image: img
+                        };
 
-                    images: form.images
+                    })
 
-                })
+                    : [],
 
-            }
 
-        )
+            /* STRING ONLY */
+            imageUrl:
+
+                form.images?.length
+
+                    ? (
+                        typeof form.images[0] === "object"
+                            ? form.images[0].image
+                            : form.images[0]
+                    )
+
+                    : null
+
+        };
+
+
+        fetch(`${API_BASE_URL}/api/products/${id}`, {
+
+            method: "PUT",
+
+            headers: {
+
+                "Content-Type": "application/json"
+
+            },
+
+            body: JSON.stringify(payload)
+
+        })
+
+            .then(res => {
+
+                if (!res.ok) {
+
+                    console.log("PAYLOAD SENT", payload);
+
+                    throw new Error("Update failed");
+
+                }
+
+                return res.json();
+
+            })
 
             .then(() => {
 
-                alert("updated");
+                alert("Product updated successfully ✅");
 
                 navigate("/products");
+
+            })
+
+            .catch(err => {
+
+                console.error(err);
+
+                alert("Still error — send payload screenshot");
 
             });
 
     }
-
 
     if (loading) return <p>loading...</p>;
 
@@ -288,133 +317,84 @@ function EditProduct() {
 
                 <form onSubmit={saveProduct}>
 
-
                     <input
-
                         name="name"
-
                         value={form.name}
-
                         onChange={handleChange}
-
                         placeholder="Product Name"
-
                     />
 
 
                     <input
-
                         name="price"
-
                         value={form.price}
-
                         onChange={handleChange}
-
-                        placeholder="Original Price"
-
+                        placeholder="Price"
                     />
 
 
                     <input
-
                         name="discountPrice"
-
                         value={form.discountPrice}
-
                         onChange={handleChange}
-
                         placeholder="Discount Price"
-
                     />
 
 
                     <input
-
                         name="stock"
-
                         type="number"
-
                         value={form.stock}
-
                         onChange={handleChange}
-
                         placeholder="Stock"
-
                     />
 
 
                     <select
-
                         name="category"
-
                         value={form.category}
-
                         onChange={handleChange}
-
                     >
 
                         <option value="Watch">Watch</option>
-
                         <option value="Shoes">Shoes</option>
-
                         <option value="Clothing">Clothing</option>
-
                         <option value="Accessories">Accessories</option>
 
                     </select>
 
 
                     <input
-
-                        name="sizes"
-
-                        value={form.sizes}
-
+                        name="sizesText"
+                        value={form.sizesText}
                         onChange={handleChange}
-
-                        placeholder="Sizes (S,M,L)"
-
+                        placeholder="Sizes S,M,L"
                     />
 
 
                     <input
-
-                        name="colors"
-
-                        value={form.colors}
-
+                        name="colorsText"
+                        value={form.colorsText}
                         onChange={handleChange}
-
-                        placeholder="Colors (Black,White)"
-
+                        placeholder="Colors Black,White"
                     />
 
 
                     <textarea
-
                         name="description"
-
                         value={form.description}
-
                         onChange={handleChange}
-
                         placeholder="Description"
-
                     />
 
 
                     <label>
 
                         <input
-
                             type="checkbox"
-
                             name="active"
-
                             checked={form.active}
-
                             onChange={handleChange}
-
                         />
 
                         Active product
@@ -423,21 +403,13 @@ function EditProduct() {
 
 
                     <input
-
                         type="file"
-
                         multiple
-
                         onChange={
-
-                            e => Array.from(
-
-                                e.target.files
-
-                            ).forEach(uploadImage)
-
+                            e =>
+                                Array.from(e.target.files)
+                                    .forEach(uploadImage)
                         }
-
                     />
 
 
@@ -449,38 +421,24 @@ function EditProduct() {
                         {form.images.map((img, i) => (
 
                             <div
-
                                 key={i}
-
-                                draggable
-
-                                onDragStart={dragStart(i)}
-
-                                onDrop={dropImage(i)}
-
-                                onDragOver={(e) => e.preventDefault()}
-
                                 className="preview-box"
-
                             >
 
                                 <img
-
-                                    src={img}
-
+                                    src={
+                                        typeof img === "object"
+                                            ? img.image
+                                            : img
+                                    }
                                     className="preview-img"
-
                                 />
 
 
                                 <button
-
                                     type="button"
-
                                     className="img-delete-btn"
-
                                     onClick={() => removeImage(i)}
-
                                 >
 
                                     ✕
@@ -502,7 +460,6 @@ function EditProduct() {
 
 
                 </form>
-
 
             </div>
 

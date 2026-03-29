@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import "./App.css";
-
+import API_BASE_URL from "./config";
 function AdminOrders() {
   const user = JSON.parse(localStorage.getItem("user"));
   const [orders, setOrders] = useState([]);
@@ -16,7 +16,7 @@ function AdminOrders() {
 
   async function loadOrders() {
     try {
-      const res = await fetch("http://localhost:8080/api/orders/all", {
+      const res = await fetch(`${API_BASE_URL}/api/orders/all`, {
         headers: { Authorization: `Bearer ${user?.token}` }
       });
       const data = await res.json();
@@ -39,7 +39,7 @@ function AdminOrders() {
 
   async function updateStatus(orderId, status) {
     try {
-      const res = await fetch(`http://localhost:8080/api/orders/status/${orderId}?status=${status}`, {
+      const res = await fetch(`${API_BASE_URL}/api/orders/status/${orderId}?status=${status}`, {
         method: "PUT",
         headers: { Authorization: `Bearer ${user?.token}` }
       });

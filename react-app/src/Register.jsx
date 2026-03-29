@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import "./App.css";
-
+import API_BASE_URL from "./config";
 function Register() {
   const [data, setData] = useState({
     name: "",
@@ -17,7 +17,7 @@ function Register() {
   function handleSubmit(e) {
     e.preventDefault();
 
-    fetch("http://localhost:8080/api/auth/register", {
+    fetch(`${API_BASE_URL}/api/auth/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

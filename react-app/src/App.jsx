@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Routes, Route, Link, useNavigate, Navigate, useLocation } from "react-router-dom";
-
+import API_BASE_URL from "./config";
 import OrderSuccess from "./OrderSuccess";
 import MyOrders from "./MyOrders";
 import Login from "./login";
@@ -59,7 +59,7 @@ function App() {
     if (!user?.token || user.role === "ADMIN") return;
 
     function checkOrderStatus() {
-      fetch("http://localhost:8080/api/orders/my", {
+      fetch(`${API_BASE_URL}/api/orders/my`, {
         headers: { Authorization: `Bearer ${user.token}` }
       })
         .then(res => res.json())
@@ -108,7 +108,7 @@ function App() {
       return;
     }
 
-    fetch("http://localhost:8080/api/cart", {
+    fetch(`${API_BASE_URL}/api/cart`, {
       headers: {
         Authorization: `Bearer ${user.token}`
       }
@@ -306,8 +306,7 @@ function App() {
           <Route path="/track-order" element={user ? <TrackOrder /> : <Navigate to="/login" />} />
           <Route path="/track-order/:id" element={user ? <TrackOrder /> : <Navigate to="/login" />} />
           <Route path="/orders" element={user ? <MyOrders /> : <Navigate to="/login" />} />
-          <Route path="/my-collectibles" element={<MyCollectibles />} />s
-          <Route path="/my-collectibles" element={<MyCollectibles />} />
+          <Route path="/my-collectibles" element={user ? <MyCollectibles /> : <Navigate to="/login" />} />
           {/* ADMIN */}
           <Route path="/admin" element={<AdminRoute user={user}><AdminDashboard /></AdminRoute>} />
           <Route path="/admin/orders" element={<AdminRoute user={user}><AdminOrders /></AdminRoute>} />
@@ -318,7 +317,14 @@ function App() {
               </AdminRoute>
             }
           />
-          <Route path="/edit/:id" element={<EditProduct />} />
+          <Route
+            path="/edit/:id"
+            element={
+              <AdminRoute user={user}>
+                <EditProduct />
+              </AdminRoute>
+            }
+          />
         </Routes>
       </div>
 

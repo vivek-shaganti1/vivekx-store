@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./App.css";
-
+import API_BASE_URL from "./config";
 function Checkout() {
   const navigate = useNavigate();
   const [items, setItems] = useState([]);
@@ -32,7 +32,7 @@ function Checkout() {
       setLoading(false);
     } else {
       // Otherwise load cart
-      fetch("http://localhost:8080/api/cart", {
+      fetch(`${API_BASE_URL}/api/cart`, {
         headers: { Authorization: `Bearer ${user?.token}` }
       })
         .then(res => res.json())
@@ -69,7 +69,7 @@ function Checkout() {
         const parsed = JSON.parse(buyNow);
 
         const res = await fetch(
-          `http://localhost:8080/api/orders/buy-now?productId=${parsed.product.id}&quantity=${parsed.quantity}`,
+          `${API_BASE_URL}/api/orders/buy-now?productId=${parsed.product.id}&quantity=${parsed.quantity}`,
           {
             method: "POST",
             headers: {
@@ -84,10 +84,11 @@ function Checkout() {
 
       } else {
         // 🛒 CART FLOW
-        const res = await fetch("http://localhost:8080/api/orders/place", {
+        const res = await fetch(`${API_BASE_URL}/api/orders/place`, {
           method: "POST",
           headers: {
-            "Authorization": `Bearer ${user.token}`
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${user.token}`
           }
         });
 

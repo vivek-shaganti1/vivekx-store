@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./App.css";
-
+import API_BASE_URL from "./config";
 function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
@@ -10,7 +10,7 @@ function ForgotPassword() {
   function handleSubmit(e) {
     e.preventDefault();
 
-    fetch("http://localhost:0/api/users/forgot-password", {
+    fetch(`${API_BASE_URL}/api/users/forgot-password`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email })

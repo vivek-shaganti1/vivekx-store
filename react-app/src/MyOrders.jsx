@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./App.css";
-
+import API_BASE_URL from "./config";
 function MyOrders() {
   const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
@@ -10,13 +10,13 @@ function MyOrders() {
 
   function loadOrders() {
     if (!user?.token) return;
-    fetch("http://localhost:8080/api/orders/my", {
+    fetch(`${API_BASE_URL}/api/orders/my`, {
       headers: { Authorization: `Bearer ${user.token}` }
     })
       .then(res => res.json())
-      .then(data => { 
-        setOrders(data); 
-        setLoading(false); 
+      .then(data => {
+        setOrders(data);
+        setLoading(false);
       })
       .catch(() => {
         // Mock data when backend is not running to still permit testing
@@ -33,7 +33,7 @@ function MyOrders() {
 
   function cancelOrder(orderId) {
     if (!window.confirm("Cancel this order?")) return;
-    fetch(`http://localhost:8080/api/orders/cancel/${orderId}`, {
+    fetch(`${API_BASE_URL}/api/orders/cancel/${orderId}`, {
       method: "PUT",
       headers: { Authorization: `Bearer ${user.token}` }
     })
@@ -95,8 +95,8 @@ function MyOrders() {
                 <div className="order-card-v2-footer">
                   <span className="order-timestamp">{order.date || "Just now"}</span>
                   <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-                    <button 
-                      className="btn-outline-gold" 
+                    <button
+                      className="btn-outline-gold"
                       style={{ padding: "6px 16px", fontSize: "12px", borderRadius: "50px" }}
                       onClick={() => navigate(`/track-order/${order.id}`)}
                     >

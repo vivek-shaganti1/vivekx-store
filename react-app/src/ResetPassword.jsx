@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./App.css";
-
+import API_BASE_URL from "./config";
 function ResetPassword() {
   const [data, setData] = useState({
     email: "",
@@ -24,7 +24,7 @@ function ResetPassword() {
       return;
     }
 
-    fetch("http://localhost:8080/api/users/reset-password", {
+    fetch(`${API_BASE_URL}/api/users/reset-password`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

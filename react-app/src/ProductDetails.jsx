@@ -2,7 +2,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Minus, Plus } from "lucide-react";
 import "./App.css";
-
+import API_BASE_URL from "./config";
 const HIGHLIGHTS = [
   { icon: "✦", label: "Premium Quality", sub: "Crafted with precision materials" },
   { icon: "⟳", label: "Easy Returns", sub: "30-day hassle-free return policy" },
@@ -88,7 +88,7 @@ function ProductDetails() {
 
     if (!slug) return;
 
-    fetch(`http://localhost:8080/api/products/slug/${slug}`)
+    fetch(`${API_BASE_URL}/api/products/slug/${slug}`)
 
       .then(res => {
 
@@ -101,17 +101,17 @@ function ProductDetails() {
       .then(data => {
 
         // fallback if no images saved
-        if (!data.images || data.images.length === 0) {
-
-          data.images = [
-
-            data.imageUrl ||
-
-            "https://dummyimage.com/600x600/000/fff&text=No+Image"
-
-          ];
-
-        }
+        data.images =
+          data.images?.length
+            ? data.images
+            : data.imageUrl
+              ? [{ image: data.imageUrl }]
+              : [
+                {
+                  image:
+                    "https://dummyimage.com/600x600/000/fff&text=No+Image"
+                }
+              ];
 
         setProduct(data);
 
@@ -155,7 +155,7 @@ function ProductDetails() {
 
     fetch(
 
-      "http://localhost:8080/api/cart/add",
+      `${API_BASE_URL}/api/cart/add`,
 
       {
 
@@ -248,7 +248,7 @@ function ProductDetails() {
 
       const res = await fetch(
 
-        `http://localhost:8080/api/ownership/activate?code=${code}&userId=1`,
+        `${API_BASE_URL}/api/ownership/activate?code=${code}&userId=1`,
 
         {
           method: "POST"
@@ -264,7 +264,7 @@ function ProductDetails() {
 
       const updated = await fetch(
 
-        `http://localhost:8080/api/products/slug/${slug}`
+        `${API_BASE_URL}/api/products/slug/${slug}`
 
       );
 
@@ -346,9 +346,13 @@ function ProductDetails() {
                 onClick={() => setZoomed(!zoomed)}
               >
                 <img
-                  src={product.images[activeImg]}
+                  src={
+                    typeof product.images?.[activeImg] === "object"
+                      ? product.images[activeImg].image
+                      : product.images?.[activeImg]
+                  }
                   alt={product.name}
-                  onError={e => {
+                  onError={(e) => {
                     e.target.src =
                       "https://dummyimage.com/600x600/000/fff&text=No+Image";
                   }}
@@ -365,7 +369,10 @@ function ProductDetails() {
                   className={`pd-thumb ${activeImg === i ? "active" : ""}`}
                   onClick={() => setActiveImg(i)}
                 >
-                  <img src={img} alt="thumb" />
+                  <img
+                    src={typeof img === "object" ? img.image : img}
+                    alt="thumb"
+                  />
                 </button>
               ))}
             </div>

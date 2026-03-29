@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import "./collectibles.css";
-
+import API_BASE_URL from "./config";
 export default function Navbar() {
 
     const [xp, setXP] = useState(0);
 
     useEffect(() => {
 
-        fetch("http://localhost:8080/api/xp/1")
+        fetch(`${API_BASE_URL}/api/xp/1`)
             .then(res => res.text())
             .then(data => setXP(parseInt(data)));
 

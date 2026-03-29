@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import "./App.css";
-
+import API_BASE_URL from "./config";
 function TrackOrder() {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -11,7 +11,7 @@ function TrackOrder() {
 
   function loadLatestOrder() {
     if (!user?.token) return;
-    fetch("http://localhost:8080/api/orders/my", {
+    fetch(`${API_BASE_URL}/api/orders/my`, {
       headers: { Authorization: `Bearer ${user.token}` }
     })
       .then(res => res.json())
@@ -23,7 +23,7 @@ function TrackOrder() {
           }
           if (!targetOrder) {
             // Find the most recent one safely if not specified or not found
-            targetOrder = data.sort((a,b) => {
+            targetOrder = data.sort((a, b) => {
               const numA = Number(a.id);
               const numB = Number(b.id);
               if (!isNaN(numA) && !isNaN(numB)) return numB - numA;
@@ -66,13 +66,13 @@ function TrackOrder() {
 
   const backendStatuses = ["PLACED", "SHIPPED", "DELIVERED"];
   let activeIndex = backendStatuses.indexOf(order.status);
-  if (activeIndex === -1) activeIndex = 0; 
+  if (activeIndex === -1) activeIndex = 0;
 
   const getLogs = () => {
     const logs = [];
     let baseDateStr = order.date;
     let baseDate = new Date(baseDateStr);
-    
+
     // Fallback date safely
     if (isNaN(baseDate.getTime())) {
       baseDate = new Date();
@@ -123,7 +123,7 @@ function TrackOrder() {
           {backendStatuses.map((step, index) => {
             const isCompleted = index <= activeIndex;
             const isCurrent = index === activeIndex;
-            
+
             // Format label text to be ordered instead of placed
             const displayLabel = step === "PLACED" ? "ORDERED" : step;
 

@@ -3,19 +3,20 @@ import { Link } from "react-router-dom";
 import "./App.css";
 import { Trash2 } from "lucide-react";
 import "./collectibles.css";
+import API_BASE_URL from "./config";
 function Products() {
   const [products, setProducts] = useState([]);
   const [filter, setFilter] = useState("all");
   const [loading, setLoading] = useState(true);
   const [collectibleOnly, setCollectibleOnly] = useState(false);
 
-  <button
-    onClick={() =>
-      setCollectibleOnly(!collectibleOnly)
-    }
-  >
-    Collectibles Only
-  </button>
+  // <button
+  //   onClick={() =>
+  //     setCollectibleOnly(!collectibleOnly)
+  //   }
+  // >
+  //   Collectibles Only
+  // </button>
 
 
   const filteredProducts = collectibleOnly
@@ -23,7 +24,7 @@ function Products() {
     : products;
   useEffect(() => {
 
-    fetch("http://localhost:8080/api/products")
+    fetch(`${API_BASE_URL}/api/products`)
 
       .then(res => res.json())
 
@@ -59,7 +60,7 @@ function Products() {
 
     if (!window.confirm("Delete this product?")) return;
 
-    fetch(`http://localhost:8080/api/products/${id}`, {
+    fetch(`${API_BASE_URL}/api/products/${id}`, {
 
       method: "DELETE",
 
@@ -172,19 +173,22 @@ function Products() {
                 )}
                 <img
                   src={
-                    product.images?.[0] ||
-                    product.imageUrl
+                    typeof product.images?.[0] === "object"
+                      ? product.images[0].image
+                      : product.images?.[0] || product.imageUrl
                   }
                   alt={product.name}
                   className="product-img"
                 />
 
-                {/* second image */}
-
                 {product.images?.[1] && (
 
                   <img
-                    src={product.images[1]}
+                    src={
+                      typeof product.images[1] === "object"
+                        ? product.images[1].image
+                        : product.images[1]
+                    }
                     alt=""
                     className="product-img hover-img"
                   />
@@ -320,9 +324,12 @@ function Products() {
 
                     {product.sizes?.slice(0, 4).map(s => (
 
-                      <span key={s} className="size-chip">
+                      <span
+                        key={typeof s === "object" ? s.id : s}
+                        className="size-chip"
+                      >
 
-                        {s}
+                        {typeof s === "object" ? s.size : s}
 
                       </span>
 

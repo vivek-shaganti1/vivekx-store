@@ -5,7 +5,7 @@ import {
 } from "recharts";
 import { Link } from "react-router-dom";
 import AdminProductTable from "./AdminProductTable";
-
+import API_BASE_URL from "./config";
 function AdminDashboard() {
   const user = JSON.parse(localStorage.getItem("user"));
   const [stats, setStats] = useState(null);
@@ -26,7 +26,7 @@ function AdminDashboard() {
 
   async function fetchSummary() {
     try {
-      const res = await fetch("http://localhost:8080/api/orders/admin/summary", {
+      const res = await fetch(`${API_BASE_URL}/api/orders/admin/summary`, {
         headers: { Authorization: `Bearer ${user?.token}` }
       });
       const data = await res.json();
@@ -72,7 +72,7 @@ function AdminDashboard() {
         <div className="chart-card glass animate-in" style={{ gridColumn: 'span 2', minHeight: '400px' }}>
           <h3>Revenue Insight (Last 7 Days)</h3>
           <div style={{ width: '100%', height: 300, marginTop: 20 }}>
-            <ResponsiveContainer width="100%" height={300}>s
+            <ResponsiveContainer width="100%" height={300}>
               <AreaChart data={stats.history}>
                 <CartesianGrid strokeDasharray="3 3" stroke={themeColors.grid} vertical={false} />
                 <XAxis dataKey="date" stroke={themeColors.axis} fontSize={12} tickLine={false} axisLine={false} />
