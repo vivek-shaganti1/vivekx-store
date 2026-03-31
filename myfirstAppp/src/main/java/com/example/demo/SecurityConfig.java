@@ -29,9 +29,10 @@ public class SecurityConfig {
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
             .authorizeHttpRequests(auth -> auth
-                // 🔓 allow everything temporarily
                 .anyRequest().permitAll()
-            );
+            )
+            // 🔐 Add JWT filter so SecurityContextHolder gets populated
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

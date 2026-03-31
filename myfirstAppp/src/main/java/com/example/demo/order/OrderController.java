@@ -8,9 +8,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import java.util.List;
 import com.example.demo.UserRepository;
 import com.example.demo.User;
+import org.springframework.security.core.context.SecurityContextHolder;
 @RestController
 @RequestMapping("/api/orders")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "*")
 public class OrderController {
 
     @Autowired
@@ -35,12 +36,12 @@ public class OrderController {
 //    }
     @GetMapping("/my")
     public List<Order> getMyOrders() {
-
-        User user = userRepo.findById(1L)
+        String email = SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getName();
+        User user = userRepo.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-
         return orderRepo.findByUser(user);
-
     }
     @PutMapping("/cancel/{orderId}")
     public ResponseEntity<?> cancelOrder(@PathVariable Long orderId) {
